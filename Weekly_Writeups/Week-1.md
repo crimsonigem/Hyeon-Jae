@@ -6,4 +6,7 @@ This type of modeling is useful in maximizing the production of a foreign protei
 <span class="math inline">\(x^+(0) = x_0^+\)</span><br />
 </p>
 
+$\\frac{dx^+}{dt} = \\mu\_1^+x^+$
+*x*<sup>+</sup>(0)=*x*<sub>0</sub><sup>+</sup>
+
 ##### References
