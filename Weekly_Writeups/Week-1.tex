@@ -1,0 +1,102 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\title{Week 1 Writeup}
+\author{Hyeon-Jae Seo}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+The majority of the week was spent reading papers on various types of modeling, identifying the reactions involved in the synthesis of curli fibers, spider silk, cellulose, and alginate, and looking into cobrapy. Here I will focus on creating a gene circuit model of curli production.
+
+\section{Mass Action Kinetics}
+Mass Action Kinetics state that the rate of a reaction is the product of a rate constant (k) and the mass of the substrate (S). Several assumptions will be made in the following model:
+
+\begin{enumerate}
+	\item Some of the molecular interactions, like polymerase or ribosome binding, will be ignored, as these would greatly increase the complexity of the model.
+	\item Transcription factor binding achieves equilibrium much faster than transcription, translation, and protein accumulation, so it can be considered to be at steady state on the time scale of proteins. 
+	\item Spatial parameters, heat and diffusion gradients, transport times, etc. will not be considered to avoid partial differential equations.
+\end{enumerate}
+
+In the case of curli fibers, the main reactions are transcription, translation, secretion, nucleation, and polymerization. For now, I will focus on the transcription and translation aspects. This can be described using the following sets of chemical equations: 
+
+\begin{center}
+\textbf{Transcription \& Translation} \\
+\bigskip
+$g_{csgDEFG} \xrightarrow{k_{DEFG-transcription}}  g_{csgDEFG} + mRNA_{DEFG}$ \\
+\bigskip
+$mRNA_{DEFG} \xrightarrow{k_{DEFG-translation}} mRNA_{DEFG} + CsgD + CsgE + CsgF + CsgG$ \\
+\bigskip
+$g_{csgBA} + CsgD \xrightarrow{k_{BA-transcription}}  g_{csgBA} + CsgD + mRNA_{BA} $ \\
+\bigskip
+$mRNA_{BA} \xrightarrow{k_{BA-translation}} CsgA + CsgB$ \\ 
+
+\hfill \break
+\textbf{Degradation} \\
+\bigskip
+$mRNA_{DEFG} \xrightarrow{\gamma_{DEFG}} \varnothing$ \\ 
+\bigskip
+$mRNA_{BA} \xrightarrow{\gamma_{BA}}  \varnothing$ \\ 
+\bigskip
+$CsgB \xrightarrow{\gamma_{B}}  \varnothing$ \\ 
+\bigskip
+$CsgA \xrightarrow{\gamma_{A}}  \varnothing$ \\
+\bigskip
+$CsgD \xrightarrow{\gamma_{D}}  \varnothing$ \\
+\bigskip
+$CsgE \xrightarrow{\gamma_{E}}  \varnothing$ \\
+\bigskip
+$CsgF \xrightarrow{\gamma_{F}}  \varnothing$ \\
+\bigskip
+$CsgG \xrightarrow{\gamma_{G}}  \varnothing$ \\
+
+\end{center}
+
+From these, we derive a system of differential equations to describe the rate of change of mRNA and protein levels over time:
+
+\begin{center}
+$\frac{d[mRNA_{DEFG}]}{dt} = k_{DEFG-transcription}[g_{csgDEFG}] - \gamma_{DEFG}[mRNA_{DEFG}]$ \\
+\bigskip
+$\frac{d[mRNA_{BA}]}{dt} = k_{BA-transcription}[g_{csgBA}] - \gamma_{BA}[mRNA_{BA}]$ \\
+\bigskip
+$\frac{d[CsgA]}{dt} = k_{BA-translation}[mRNA_{BA}] - \gamma_{BA}[CsgA]$ \\
+\bigskip
+$\frac{d[CsgB]}{dt} =  k_{BA-translation}[mRNA_{BA}] - \gamma_{BA}[CsgB]$ \\
+\bigskip
+$\frac{d[CsgD]}{dt} =  k_{DEFG-translation}[mRNA_{DEFG}] - \gamma_{DEFG}[CsgD]$ \\
+\bigskip
+$\frac{d[CsgE]}{dt} =  k_{DEFG-translation}[mRNA_{DEFG}] - \gamma_{DEFG}[CsgE]$ \\
+\bigskip
+$\frac{d[CsgF]}{dt} =  k_{DEFG-translation}[mRNA_{DEFG}] - \gamma_{DEFG}[CsgF]$ \\
+\bigskip
+$\frac{d[CsgG]}{dt} =  k_{DEFG-translation}[mRNA_{DEFG}] - \gamma_{DEFG}[CsgG]$ \\
+
+\end{center}
+
+\section{The Input Function for a Transcriptional Repressor}
+The above equations can be made more accurate by incorporating the effects of activators, repressors, and inducers on gene expression. The input function derived from taking cooperativity into account is known as the Hill Equation. Here I will derive the Hill Equation for 
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
