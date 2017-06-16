@@ -102,12 +102,18 @@ t = np.arange(0.0, 200.0, 0.1)
 # Run simulation using GeneCircuit function
 state = odeint(GeneCircuit, state_0, t)
 
-# Plot simulation
+# Visualization
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+
+# define parameters for graph
+csgA = state[:, 1]
+csgEG = state[:, 4]
+F = state[:, 10]
+
+# plot graph
 fig = figure()
 ax = fig.gca(projection = '3d')
-F = state[:, 10]
 ax.plot_surface(k_A, k_EG, F)
 ax.set_xlabel('rate of csgA translation')
 ax.set_ylabel('rate of csgEG translation')
