@@ -1,7 +1,7 @@
 ### Week 2
 
 ##### Overview
-The majority of the week was spent fleshing out the gene circuit model for the csg production pathway. This involved looking more closely at the relevant parameters, attempting to find some of the rate constants, and simplifying the model as much as possible. I started working with Erin this week, which proved to be an excellent decision, as I was able to make significantly more progress when I had someone to discuss my work with.
+The majority of the week was spent fleshing out the gene circuit model for the csg production pathway. This involved looking more closely at the relevant parameters, attempting to find some of the rate constants, and simplifying the model as much as possible. I started working with Erin this week, which proved to be an excellent decision, as I was able to make significantly more progress when I had someone to discuss my work with. See [Csg_Gene_Circuit_Model](https://github.com/crimsonigem/Hyeon-Jae/blob/master/gene_circuit_model/Csg_Gene_Circuit_Model.pdf) for the writeup of our work.
 
 Numerous questions arose along the way that have still not been answered, so I will list some of them here.
 
