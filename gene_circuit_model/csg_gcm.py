@@ -12,9 +12,10 @@ import numpy as np
 # define constants
 
 # transcription / mRNA degradation
-k_t
+k_pol = 50 # ntd s^-1
+k_t = k_pol / 2100 
 k_td = exp(r_t * t)
-r_t
+r_t = log(0.5) / 10
 # protein production/degradation
 k_A
 k_Ad = exp(r_A * t) # not sure if this is necessary
@@ -31,8 +32,6 @@ k_OM
 # polymerization 
 k_nu_1 = 3.74e-2 # h^-1 mM^-1
 k_nu_1d = 1.01e-3 # h^-1
-k_ni_2
-k_nu_2d
 k_fb = 2.75e6 # h^-1 mM^-1
 k_fbd = 1.84e3 #h^-1
 
