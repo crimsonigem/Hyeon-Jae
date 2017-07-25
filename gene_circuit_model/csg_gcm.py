@@ -213,8 +213,7 @@ state_0 = [g_csgA_0, g_csgBCEFG_0, mRNA_csgA_0, mRNA_csgBCEFG_0, csgA_cyt_0, sec
            F_ECM_0, csgB_ECM_0]
 
 ### RUN SIMULATION
-state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1))
-print(np.shape(state))
+state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1), mxstep=5000000)
 
 # Maximize A
 state = np.zeros((3600, 21))
@@ -222,7 +221,7 @@ state_df = pd.DataFrame(state, index=t, columns=np.arange(0, 21, 1))
 for i in range(21):
     tmp = odeint(CsgPathway, state_0, t, args=(beta[i], 1, 1, 1, 1, 1))
     tmp_df = pd.DataFrame(tmp, index=t, columns=np.arange(0, 42, 1))
-    state[:, i] = tmp_df.iloc[:, 40]
+    state_df.iloc[:, i] = tmp_df.iloc[:, 40]
 
 ### CHECK NUMBERS
 test_range = np.arange(0, 60, 10)
@@ -232,24 +231,24 @@ print(state_df.shape)
  #   print(state_df.iloc[i, 40])
 
 ### VISUALIZATION
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
+fig = plt.figure()
+ax = fig.gca(projection='3d')
 
-# PLOTLY DASHBOARD
-import plotly.dashboard_objs as dashboard
+# Plot the surface.
+surf = ax.plot_surface(t, beta, state_df, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
 
-import IPython.display
-from IPython.display import Image
+# Customize the z axis.
+ax.set_zlim(-1.01, 1.01)
+ax.zaxis.set_major_locator(LinearLocator(10))
+ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
-my_dboard = dashboard.Dashboard()
-my_dboard.get_preview()
+# Add a color bar which maps values to colors.
+fig.colorbar(surf, shrink=0.5, aspect=5)
 
-import plotly.graph_objs as go
-import plotly.figure_factory as ff
-import plotly.plotly as py
-
-# Actual Plot
-trace = go.Surface (
-    colorscale = 'Viridis',
-    x = beta , y = t[:60], z = state)
-data = [trace]
-py.iplot(data)
+plt.show()
