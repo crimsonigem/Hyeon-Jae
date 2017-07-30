@@ -150,12 +150,16 @@ def CsgPathway(state, t, beta1, beta2, beta3, beta4, beta5, beta6):
     dcsgB_ECM = D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega) * SA * N_A
     
     # return derivatives
-    return [g_csgA, g_csgBCEFG, dmRNA_csgA, dmRNA_csgBCEFG, dcsgA_cyt, dsecBcsgA, dsecABYEGcsgA, dF_cyt, dcsgB_cyt,
+    derivatives = [g_csgA, g_csgBCEFG, dmRNA_csgA, dmRNA_csgBCEFG, dcsgA_cyt, dsecBcsgA, dsecABYEGcsgA, dF_cyt, dcsgB_cyt,
             dsecBcsgB, dsecABYEGcsgB, dcsgC_cyt, dsecBcsgC, dsecABYEGcsgC, dcsgE_cyt,
             dsecBcsgE, dsecABYEGcsgE, dcsgF_cyt, dsecBcsgF, dsecABYEGcsgF, dcsgG_cyt, dsecBcsgG,
             dsecABYEGcsgG, dsecB, dsecA, dsecYEG, dcsgE_9, dcsgG_9, dcsgGEF, dcsgA_per, dF_per,
             dcsgB_per, dcsgC_per, dcsgCcsgA, dcsgCcsgB, dcsgE_per, dcsgF_per, dcsgG_per, 
             dcsgF_ECM, dcsgA_ECM, dF_ECM, dcsgB_ECM]
+    derivatives_array = np.array(derivatives)
+    np.place(derivatives_array, derivatives_array<0, 0)
+    #derivatives_log = [list(map(math.log, derivatives_array))]
+    return derivatives_array
     
 ### INITIAL CONDITIONS
 g_csgA_0 = 71.4e-8 # uM
@@ -213,15 +217,19 @@ state_0 = [g_csgA_0, g_csgBCEFG_0, mRNA_csgA_0, mRNA_csgBCEFG_0, csgA_cyt_0, sec
            F_ECM_0, csgB_ECM_0]
 
 ### RUN SIMULATION
-state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1), mxstep=5000000)
+#state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1), mxstep=5000000)
+#state_df = pd.DataFrame(state, index=t, columns=np.arange(0, 42, 1))
 
-# Maximize A
-state = np.zeros((3600, 21))
-state_df = pd.DataFrame(state, index=t, columns=np.arange(0, 21, 1))
+
+csgA_ECM = np.zeros((3600, 21))
+csgA_ECM_df = pd.DataFrame(csgA_ECM)
+csgA_ECM_f = np.zeros(21)
+csgA_ECM_f_df = pd.DataFrame(csgA_ECM_f)
 for i in range(21):
-    tmp = odeint(CsgPathway, state_0, t, args=(beta[i], 1, 1, 1, 1, 1))
-    tmp_df = pd.DataFrame(tmp, index=t, columns=np.arange(0, 42, 1))
-    state_df.iloc[:, i] = tmp_df.iloc[:, 40]
+    tmp = odeint(CsgPathway, state_0, t, args=(beta[i], 1, 1, 1, 1, 1), mxstep=5000000)
+    tmp_df = pd.DataFrame(tmp)
+    csgA_ECM_df.iloc[:, i] = tmp_df.iloc[:, 41]
+    csgA_ECM_f_df.iloc[i] = tmp_df.iloc[3599, 41]
 
 ### CHECK NUMBERS
 test_range = np.arange(0, 60, 10)
