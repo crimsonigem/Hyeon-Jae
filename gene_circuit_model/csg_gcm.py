@@ -10,10 +10,13 @@ from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
 import math
-import time
 
 ### TIME INTERVAL
-t = np.arange(0.0, 60*60, 1) 
+tmin = 0
+tmax = 20
+tint = 1
+t = np.arange(tmin, tmax, tint) 
+
 
 ### CONSTANTS
 # Transcription
@@ -57,110 +60,6 @@ epsilon1d = 2.805e-9 # s^(-1)uM^(-1)
 epsilon2 = 0.764 # s^(-1)uM^(-1)
 epsilon2d = 5.111e-4 # s^(-1)uM^(-1)
 
-### ODE SOLVER
-def CsgPathway(state, t, beta1, beta2, beta3, beta4, beta5, beta6):
-    
-    # unpack state vector
-    g_csgA = state[0]
-    g_csgBCEFG = state[1]
-    mRNA_csgA = state[2]
-    mRNA_csgBCEFG = state[3]
-    csgA_cyt = state[4]
-    secBcsgA = state[5]
-    secABYEGcsgA = state[6]
-    F_cyt = state[7]
-    csgB_cyt = state[8]
-    secBcsgB = state[9]
-    secABYEGcsgB = state[10]
-    csgC_cyt = state[11]
-    secBcsgC = state[12]
-    secABYEGcsgC = state[13]
-    csgE_cyt = state[14]
-    secBcsgE = state[15]
-    secABYEGcsgE = state[16]
-    csgF_cyt = state[17]
-    secBcsgF = state[18]
-    secABYEGcsgF = state[19]
-    csgG_cyt = state[20]
-    secBcsgG = state[21]
-    secABYEGcsgG = state[22]
-    secB = state[23]
-    secA = state[24]
-    secYEG = state[25]
-    csgE_9 = state[26]
-    csgG_9 = state[27]
-    csgGEF = state[28]
-    csgA_per = state[29]
-    F_per = state[30]
-    csgB_per = state[31]
-    csgC_per = state[32]
-    csgCcsgA = state[33]
-    csgCcsgB = state[34]
-    csgE_per = state[35]
-    csgF_per = state[36]
-    csgG_per = state[37]
-    csgF_ECM = state[38]
-    csgA_ECM = state[39]
-    F_ECM = state[40]
-    csgB_ECM = state[41]
-    
-    # compute derivatives
-    dmRNA_csgA = (alpha1 * g_csgA) - (zeta1 * mRNA_csgA)
-    dmRNA_csgBCEFG = (alpha2 * g_csgBCEFG) - (zeta2 * mRNA_csgBCEFG)
-    
-    dcsgA_cyt = (beta1 * mRNA_csgA) - (gamma1 * csgA_cyt * (secB ** 4)) + (gamma1d * secBcsgA) - (epsilon1 * (csgA_cyt ** 2)) + (epsilon1d * F_cyt) - (epsilon2 * F_cyt * csgA_cyt) + (epsilon2d * F_cyt)
-    dsecBcsgA = (gamma1 * csgA_cyt * (secB **4)) - (gamma1d * secBcsgA) - (gamma2 * secBcsgA * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgA = (gamma2 * secBcsgA * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgA)
-    dF_cyt = (epsilon1 * (csgA_cyt ** 2)) - (epsilon1d * F_cyt)
-    dcsgB_cyt = (beta2 * mRNA_csgBCEFG) - (gamma1 * csgB_cyt * (secB ** 4)) + (gamma1d * secBcsgB)
-    dsecBcsgB = (gamma1 * csgB_cyt * (secB **4)) - (gamma1d * secBcsgB) - (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgB = (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgB)
-    dcsgC_cyt = (beta3 * mRNA_csgBCEFG) - (gamma1 * csgC_cyt * (secB ** 4)) + (gamma1d * secBcsgC)
-    dsecBcsgC = (gamma1 * csgC_cyt * (secB **4)) - (gamma1d * secBcsgB) - (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgC = (gamma2 * secBcsgC * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgC)
-    dcsgE_cyt = (beta4 * mRNA_csgBCEFG) - (gamma1 * csgE_cyt * (secB ** 4)) + (gamma1d * secBcsgE)
-    dsecBcsgE = (gamma1 * csgE_cyt * (secB **4)) - (gamma1d * secBcsgE) - (gamma2 * secBcsgE * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgE = (gamma2 * secBcsgE * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgE)
-    dcsgF_cyt = (beta5 * mRNA_csgBCEFG) - (gamma1 * csgF_cyt * (secB ** 4)) + (gamma1d * secBcsgF)
-    dsecBcsgF = (gamma1 * csgF_cyt * (secB **4)) - (gamma1d * secBcsgF) - (gamma2 * secBcsgF * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgF = (gamma2 * secBcsgF * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgF)
-    dcsgG_cyt = (beta6 * mRNA_csgBCEFG) - (gamma1 * csgG_cyt * (secB ** 4)) + (gamma1d * secBcsgB)
-    dsecBcsgG = (gamma1 * csgG_cyt * (secB **4)) - (gamma1d * secBcsgG) - (gamma2 * secBcsgG * (secA ** 2) * (secYEG ** 2))
-    dsecABYEGcsgG = (gamma2 * secBcsgG * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgG)
-    dsecB = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma1 * (secB ** 4) * (csgA_cyt + csgB_cyt + csgC_cyt + csgE_cyt + csgF_cyt + csgG_cyt)) + (gamma1d * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
-    dsecA = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma2 * (secA ** 2) * (secYEG ** 2) * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
-    dsecYEG = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma2 * (secA ** 2) * (secYEG ** 2) * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
-    
-    dcsgE_9 = (delta1 * (csgE_per ** 9)) - (delta1d * csgE_9)
-    dcsgG_9 = (delta3 * (csgG_per ** 9)) - (delta3d * csgG_9) - (delta4 * csgE_9 * (csgF_ECM ** 2) * csgG_9) + (delta4d * csgGEF)
-    dcsgGEF = (delta4 * csgE_9 * (csgF_ECM ** 2) * csgG_9) - (delta4d * csgGEF)
-    dcsgA_per = (gamma3 * secABYEGcsgA) - (delta5 * csgA_per * csgC_per) - (epsilon1 * (csgA_per ** 2)) + (epsilon1d * F_per) - (epsilon2 * F_per * csgA_per) + (epsilon2d * F_per)
-    dF_per = (epsilon1 * (csgA_per ** 2)) - (epsilon1d * F_per)
-    dcsgB_per = (gamma3 * secABYEGcsgB) - (delta5 * csgB_per * csgC_per)
-    dcsgC_per = (gamma3 * secABYEGcsgC) - (delta5 * csgA_per * csgC_per) - (delta5 * csgB_per * csgC_per) + (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega) * SA * N_A) + (D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega) * SA * N_A)
-    dcsgCcsgA = (delta5 * csgA_per * csgC_per) - (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega))
-    dcsgCcsgB = (delta5 * csgB_per * csgC_per) - (D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega))
-    dcsgE_per = (gamma3 * secABYEGcsgE)
-    dcsgF_per = (gamma3 * secABYEGcsgF) - D * ((csgF_per - csgF_ECM) * 1e-3 / omega) * SA * N_A
-    dcsgG_per = (gamma3 * secABYEGcsgF) - (delta3 * (csgG_per ** 9))
-    
-    dcsgF_ECM = D * ((csgF_per - csgF_ECM) * 1e-3 / omega) * SA * N_A
-    dcsgA_ECM = (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega) * SA * N_A) - (epsilon1 * (csgA_cyt ** 2)) + (epsilon1d * F_cyt) - (epsilon2 * F_cyt * csgA_cyt) + (epsilon2d * F_cyt)
-    dF_ECM = (epsilon1 * (csgA_ECM ** 2)) - (epsilon1d * F_ECM)
-    dcsgB_ECM = D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega) * SA * N_A
-    
-    # return derivatives
-    derivatives = [g_csgA, g_csgBCEFG, dmRNA_csgA, dmRNA_csgBCEFG, dcsgA_cyt, dsecBcsgA, dsecABYEGcsgA, dF_cyt, dcsgB_cyt,
-            dsecBcsgB, dsecABYEGcsgB, dcsgC_cyt, dsecBcsgC, dsecABYEGcsgC, dcsgE_cyt,
-            dsecBcsgE, dsecABYEGcsgE, dcsgF_cyt, dsecBcsgF, dsecABYEGcsgF, dcsgG_cyt, dsecBcsgG,
-            dsecABYEGcsgG, dsecB, dsecA, dsecYEG, dcsgE_9, dcsgG_9, dcsgGEF, dcsgA_per, dF_per,
-            dcsgB_per, dcsgC_per, dcsgCcsgA, dcsgCcsgB, dcsgE_per, dcsgF_per, dcsgG_per, 
-            dcsgF_ECM, dcsgA_ECM, dF_ECM, dcsgB_ECM]
-    derivatives_array = np.array(derivatives)
-    np.place(derivatives_array, derivatives_array<0, 0)
-    #derivatives_log = [list(map(math.log, derivatives_array))]
-    return derivatives_array
-    
 ### INITIAL CONDITIONS
 g_csgA_0 = 71.4e-8 # uM
 g_csgBCEFG_0 = 71.4e-8 # uM
@@ -216,12 +115,77 @@ state_0 = [g_csgA_0, g_csgBCEFG_0, mRNA_csgA_0, mRNA_csgBCEFG_0, csgA_cyt_0, sec
            csgCcsgA_0, csgCcsgB_0, csgE_per_0, csgF_per_0, csgG_per_0, csgF_ECM_0, csgA_ECM_0,
            F_ECM_0, csgB_ECM_0]
 
+### ODE SOLVER
+def CsgPathway(state, t, beta1, beta2, beta3, beta4, beta5, beta6):
+    
+    # unpack state vector
+    g_csgA, g_csgBCEFG, mRNA_csgA, mRNA_csgBCEFG,csgA_cyt, secBcsgA, secABYEGcsgA, F_cyt, csgB_cyt, secBcsgB, secABYEGcsgB, csgC_cyt, secBcsgC, secABYEGcsgC, csgE_cyt, secBcsgE, secABYEGcsgE, csgF_cyt, secBcsgF, secABYEGcsgF, csgG_cyt, secBcsgG, secABYEGcsgG, secB, secA, secYEG, csgE_9, csgG_9, csgGEF, csgA_per, F_per, csgB_per, csgC_per, csgCcsgA, csgCcsgB, csgE_per, csgF_per, csgG_per, csgF_ECM, csgA_ECM, F_ECM, csgB_ECM = state
+    
+    # compute derivatives
+    dmRNA_csgA = (alpha1 * g_csgA) - (zeta1 * mRNA_csgA)
+    dmRNA_csgBCEFG = (alpha2 * g_csgBCEFG) - (zeta2 * mRNA_csgBCEFG)
+    
+    dcsgA_cyt = (beta1 * mRNA_csgA) - (gamma1 * csgA_cyt * (secB ** 4)) + (gamma1d * secBcsgA) - (epsilon1 * (csgA_cyt ** 2)) + (epsilon1d * F_cyt) - (epsilon2 * F_cyt * csgA_cyt) + (epsilon2d * F_cyt)
+    dsecBcsgA = (gamma1 * csgA_cyt * (secB **4)) - (gamma1d * secBcsgA) - (gamma2 * secBcsgA * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgA = (gamma2 * secBcsgA * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgA)
+    dF_cyt = (epsilon1 * (csgA_cyt ** 2)) - (epsilon1d * F_cyt)
+    dcsgB_cyt = (beta2 * mRNA_csgBCEFG) - (gamma1 * csgB_cyt * (secB ** 4)) + (gamma1d * secBcsgB)
+    dsecBcsgB = (gamma1 * csgB_cyt * (secB **4)) - (gamma1d * secBcsgB) - (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgB = (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgB)
+    dcsgC_cyt = (beta3 * mRNA_csgBCEFG) - (gamma1 * csgC_cyt * (secB ** 4)) + (gamma1d * secBcsgC)
+    dsecBcsgC = (gamma1 * csgC_cyt * (secB **4)) - (gamma1d * secBcsgB) - (gamma2 * secBcsgB * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgC = (gamma2 * secBcsgC * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgC)
+    dcsgE_cyt = (beta4 * mRNA_csgBCEFG) - (gamma1 * csgE_cyt * (secB ** 4)) + (gamma1d * secBcsgE)
+    dsecBcsgE = (gamma1 * csgE_cyt * (secB **4)) - (gamma1d * secBcsgE) - (gamma2 * secBcsgE * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgE = (gamma2 * secBcsgE * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgE)
+    dcsgF_cyt = (beta5 * mRNA_csgBCEFG) - (gamma1 * csgF_cyt * (secB ** 4)) + (gamma1d * secBcsgF)
+    dsecBcsgF = (gamma1 * csgF_cyt * (secB **4)) - (gamma1d * secBcsgF) - (gamma2 * secBcsgF * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgF = (gamma2 * secBcsgF * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgF)
+    dcsgG_cyt = (beta6 * mRNA_csgBCEFG) - (gamma1 * csgG_cyt * (secB ** 4)) + (gamma1d * secBcsgB)
+    dsecBcsgG = (gamma1 * csgG_cyt * (secB **4)) - (gamma1d * secBcsgG) - (gamma2 * secBcsgG * (secA ** 2) * (secYEG ** 2))
+    dsecABYEGcsgG = (gamma2 * secBcsgG * (secA ** 2) * (secYEG ** 2)) - (gamma3 * secABYEGcsgG)
+    dsecB = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma1 * (secB ** 4) * (csgA_cyt + csgB_cyt + csgC_cyt + csgE_cyt + csgF_cyt + csgG_cyt)) + (gamma1d * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
+    dsecA = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma2 * (secA ** 2) * (secYEG ** 2) * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
+    dsecYEG = (gamma3 * (secABYEGcsgA + secABYEGcsgB + secABYEGcsgC + secABYEGcsgE + secABYEGcsgF + secABYEGcsgG)) - (gamma2 * (secA ** 2) * (secYEG ** 2) * (secBcsgA + secBcsgB + secBcsgC + secBcsgE + secBcsgF + secBcsgG))
+    
+    
+    dcsgA_per = (gamma3 * secABYEGcsgA) - (delta5 * csgA_per * csgC_per) - (epsilon1 * (csgA_per ** 2)) + (epsilon1d * F_per) - (epsilon2 * F_per * csgA_per) + (epsilon2d * F_per)
+    dF_per = (epsilon1 * (csgA_per ** 2)) - (epsilon1d * F_per)
+    dcsgB_per = (gamma3 * secABYEGcsgB) - (delta5 * csgB_per * csgC_per)
+    dcsgC_per = (gamma3 * secABYEGcsgC) - (delta5 * csgA_per * csgC_per) - (delta5 * csgB_per * csgC_per) + (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega) * SA * N_A) + (D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega) * SA * N_A)
+    dcsgCcsgA = (delta5 * csgA_per * csgC_per) - (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega))
+    dcsgCcsgB = (delta5 * csgB_per * csgC_per) - (D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega))
+    dcsgE_per = (gamma3 * secABYEGcsgE)
+    dcsgF_per = (gamma3 * secABYEGcsgF) - D * ((csgF_per - csgF_ECM) * 1e-3 / omega) * SA * N_A
+    dcsgG_per = (gamma3 * secABYEGcsgF) - (delta3 * (csgG_per ** 9))
+    dcsgE_9 = (delta1 * (csgE_per ** 9)) - (delta1d * csgE_9)
+    dcsgG_9 = (delta3 * (csgG_per ** 9)) - (delta3d * csgG_9) - (delta4 * csgE_9 * (csgF_ECM ** 2) * csgG_9) + (delta4d * csgGEF)
+    dcsgGEF = (delta4 * csgE_9 * (csgF_ECM ** 2) * csgG_9) - (delta4d * csgGEF)
+    
+    dcsgF_ECM = D * ((csgF_per - csgF_ECM) * 1e-3 / omega) * SA * N_A
+    dcsgA_ECM = (D * ((csgCcsgA - csgA_ECM) * 1e-3 / omega) * SA * N_A) - (epsilon1 * (csgA_cyt ** 2)) + (epsilon1d * F_cyt) - (epsilon2 * F_cyt * csgA_cyt) + (epsilon2d * F_cyt)
+    dF_ECM = (epsilon1 * (csgA_ECM ** 2)) - (epsilon1d * F_ECM)
+    dcsgB_ECM = D * ((csgCcsgB - csgB_ECM) * 1e-3 / omega) * SA * N_A
+    
+    # return derivatives
+    derivatives = [g_csgA, g_csgBCEFG, dmRNA_csgA, dmRNA_csgBCEFG, dcsgA_cyt, dsecBcsgA, dsecABYEGcsgA, dF_cyt, dcsgB_cyt,
+            dsecBcsgB, dsecABYEGcsgB, dcsgC_cyt, dsecBcsgC, dsecABYEGcsgC, dcsgE_cyt,
+            dsecBcsgE, dsecABYEGcsgE, dcsgF_cyt, dsecBcsgF, dsecABYEGcsgF, dcsgG_cyt, dsecBcsgG,
+            dsecABYEGcsgG, dsecB, dsecA, dsecYEG, dcsgE_9, dcsgG_9, dcsgGEF, dcsgA_per, dF_per,
+            dcsgB_per, dcsgC_per, dcsgCcsgA, dcsgCcsgB, dcsgE_per, dcsgF_per, dcsgG_per, 
+            dcsgF_ECM, dcsgA_ECM, dF_ECM, dcsgB_ECM]
+    derivatives_array = np.array(derivatives)
+    np.putmask(derivatives_array, derivatives_array < np.array([0]*42), 0)
+    return derivatives_array
+
+
+
 ### RUN SIMULATION
-#state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1), mxstep=5000000)
+state = odeint(CsgPathway, state_0, t, args=(beta[10], 1, 1, 1, 1, 1), mxstep = 50000)
 #state_df = pd.DataFrame(state, index=t, columns=np.arange(0, 42, 1))
 
 
-csgA_ECM = np.zeros((3600, 21))
+csgA_ECM = np.zeros((20, 21))
 csgA_ECM_df = pd.DataFrame(csgA_ECM)
 csgA_ECM_f = np.zeros(21)
 csgA_ECM_f_df = pd.DataFrame(csgA_ECM_f)
@@ -229,7 +193,7 @@ for i in range(21):
     tmp = odeint(CsgPathway, state_0, t, args=(beta[i], 1, 1, 1, 1, 1), mxstep=5000000)
     tmp_df = pd.DataFrame(tmp)
     csgA_ECM_df.iloc[:, i] = tmp_df.iloc[:, 41]
-    csgA_ECM_f_df.iloc[i] = tmp_df.iloc[3599, 41]
+    csgA_ECM_f_df.iloc[i] = tmp_df.iloc[-1, 41]
 
 ### CHECK NUMBERS
 test_range = np.arange(0, 60, 10)
